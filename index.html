@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoorayHR — Feedback</title>
+  <!-- Nunito Sans: closest free metric match for Avenir (HoorayHR's licensed typeface) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────────────────────
+     * Design tokens — subset of HoorayHR Design System
+     * Source: colors_and_type.css in HoorayHR Design System.zip
+     * ───────────────────────────────────────────────────────── */
+    :root {
+      --navy:       #142340;
+      --blue-600:   #006CC9;
+      --coral:      #E85D5D;
+      --mint-soft:  #D9FFED;
+      --bg-app:     #EBF3FA;
+      --bg-card:    #ffffff;
+      --gray-100:   #F3F4F6;
+      --gray-200:   #E5E7EB;
+      --gray-300:   #B8BDC5;
+      --gray-400:   #9CA3AF;
+      --gray-600:   #4B5563;
+      --gray-700:   #374151;
+      --gray-900:   #111827;
+      --red-50:     #FEF2F2;
+      --red-400:    #F47272;
+      --red-500:    #E85D5D;
+      --green-600:  #15803D;
+      --shadow-md:  0 4px 10px 0 rgba(0,0,0,0.08);
+      --radius-sm:  4px;
+      --radius-md:  6px;
+      --radius-lg:  8px;
+      --radius-xl:  12px;
+      --font: 'Nunito Sans', 'Avenir', 'Avenir Next', system-ui, -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100vh;
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--gray-900);
+      background: var(--bg-app);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Page layout ─────────────────────────────────────────── */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px 72px; /* bottom padding keeps card clear of footer */
+    }
+
+    /* ── Card ────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      width: 100%;
+      max-width: 520px;
+      padding: 36px 40px 40px;
+    }
+
+    /* ── Logo ────────────────────────────────────────────────── */
+    .logo {
+      display: block;
+      height: 26px;
+      width: auto;
+      margin-bottom: 28px;
+    }
+
+    /* ── Language switcher ───────────────────────────────────── */
+    .lang-switcher {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .lang-btn {
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--gray-200);
+      background: transparent;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-600);
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background .12s, color .12s, border-color .12s;
+    }
+    .lang-btn:hover { background: var(--gray-100); }
+    .lang-btn.active {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+
+    /* ── Step headings ───────────────────────────────────────── */
+    .step-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+    .step-sub {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-bottom: 24px;
+      line-height: 1.55;
+    }
+
+    /* ── Form fields ─────────────────────────────────────────── */
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin-bottom: 5px;
+    }
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray-900);
+      background: #fff;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      resize: vertical;
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: var(--gray-400); }
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--blue-600);
+      box-shadow: 0 0 0 3px rgba(0,108,201,0.12);
+    }
+    .field input.has-error,
+    .field textarea.has-error {
+      border-color: var(--red-500);
+      background: var(--red-50);
+    }
+    .field-error {
+      font-size: 12px;
+      color: var(--red-500);
+      margin-top: 4px;
+      min-height: 16px;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid transparent;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .12s, transform .05s, box-shadow .12s;
+    }
+    .btn:active { transform: translateY(1px); }
+
+    .btn--primary {
+      background: var(--blue-600);
+      color: #fff;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .btn--primary:hover:not(:disabled) { background: #005BAA; }
+    .btn--primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .btn--ghost {
+      background: transparent;
+      color: var(--gray-600);
+      border-color: var(--gray-200);
+      padding: 11px 16px;
+    }
+    .btn--ghost:hover { background: var(--gray-100); }
+
+    .btn-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-row .btn--primary { flex: 1; margin-top: 0; }
+
+    /* ── Error banner ────────────────────────────────────────── */
+    .error-banner {
+      background: var(--red-50);
+      border: 1px solid #FECACA;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--red-500);
+      margin-bottom: 16px;
+      display: none;
+    }
+    .error-banner.visible { display: block; }
+
+    /* ── Loading state ───────────────────────────────────────── */
+    .loading-wrap {
+      text-align: center;
+      padding: 32px 0;
+    }
+    .dots {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+    .dots span {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--blue-600);
+      animation: dot-bounce 1.3s ease-in-out infinite;
+    }
+    .dots span:nth-child(2) { animation-delay: .18s; }
+    .dots span:nth-child(3) { animation-delay: .36s; }
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: scale(0.55); opacity: 0.45; }
+      40%            { transform: scale(1);    opacity: 1; }
+    }
+    .loading-text {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-top: 18px;
+      line-height: 1.55;
+    }
+
+    /* ── Success state ───────────────────────────────────────── */
+    .success-wrap {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .success-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--mint-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .success-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .success-text {
+      font-size: 14px;
+      color: var(--gray-600);
+      line-height: 1.6;
+    }
+
+    /* ── Step transitions ────────────────────────────────────── */
+    .step { display: none; }
+    .step.active {
+      display: block;
+      animation: fade-up .22s ease;
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Footer env toggle ───────────────────────────────────── */
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.93);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-top: 1px solid var(--gray-200);
+      padding: 7px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 100;
+    }
+    .footer-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      white-space: nowrap;
+    }
+    .env-toggle {
+      display: flex;
+      align-items: center;
+      background: var(--gray-100);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .env-btn {
+      padding: 3px 12px;
+      border-radius: 999px;
+      border: none;
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      background: transparent;
+      color: var(--gray-600);
+      transition: background .12s, color .12s;
+    }
+    .env-btn.active {
+      background: var(--navy);
+      color: #fff;
+    }
+    .env-url {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
+      color: var(--gray-400);
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Debug panel (visible in test mode only) ────────────── */
+    .debug-panel {
+      position: fixed;
+      bottom: 38px; /* sits directly above the footer */
+      left: 0;
+      right: 0;
+      background: #0D1526;
+      border-top: 2px solid #FBF093; /* yellow stripe — signals "test mode" */
+      z-index: 98;
+      display: none;
+      flex-direction: column;
+      max-height: 300px;
+      transition: max-height .18s ease;
+    }
+    .debug-panel.visible   { display: flex; }
+    .debug-panel.collapsed { max-height: 34px; }
+
+    .debug-hd {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      height: 34px;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .debug-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #FBF093;
+      flex: 1;
+    }
+    .debug-count {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(251,240,147,0.15);
+      color: #FBF093;
+    }
+    .debug-icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.35);
+      padding: 4px 6px;
+      font-size: 12px;
+      border-radius: 4px;
+      font-family: var(--font);
+      transition: color .1s, background .1s;
+      line-height: 1;
+    }
+    .debug-icon-btn:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
+
+    .debug-chevron {
+      transition: transform .15s;
+    }
+    .debug-panel.collapsed .debug-chevron { transform: rotate(180deg); }
+
+    .debug-entries {
+      overflow-y: auto;
+      flex: 1;
+    }
+    .debug-empty {
+      padding: 14px 12px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.22);
+      font-style: italic;
+    }
+    .debug-entry { border-bottom: 1px solid rgba(255,255,255,0.04); }
+
+    .debug-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .debug-row:hover { background: rgba(255,255,255,0.04); }
+
+    .debug-dir {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
+    }
+    .debug-dir--out { background: rgba(0,108,201,0.3);  color: #5FE7FF; }
+    .debug-dir--in  { background: rgba(66,235,159,0.2); color: #42EB9F; }
+    .debug-dir--err { background: rgba(232,93,93,0.25); color: #E85D5D; }
+
+    .debug-status {
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+      min-width: 28px;
+      font-family: 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
+    }
+    .debug-status--ok  { color: #42EB9F; }
+    .debug-status--err { color: #E85D5D; }
+    .debug-status--pending { color: rgba(255,255,255,0.25); }
+
+    .debug-url {
+      font-family: 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,0.38);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    .debug-time {
+      font-size: 10px;
+      color: rgba(255,255,255,0.2);
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
+    }
+    .debug-arrow {
+      color: rgba(255,255,255,0.18);
+      font-size: 9px;
+      flex-shrink: 0;
+      transition: transform .1s;
+    }
+    .debug-entry.open .debug-arrow { transform: rotate(90deg); color: rgba(255,255,255,0.5); }
+
+    .debug-body { display: none; padding: 0 10px 8px; }
+    .debug-entry.open .debug-body { display: block; }
+    .debug-pre {
+      margin: 0;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.35);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,0.65);
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.65;
+    }
+
+    /* ── Mobile ──────────────────────────────────────────────── */
+    @media (max-width: 560px) {
+      .card { padding: 28px 20px 32px; }
+      .btn-row { flex-direction: column-reverse; }
+      .btn-row .btn--ghost { width: 100%; }
+      .env-url { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="card">
+
+    <!-- HoorayHR logo (inline SVG from design system) -->
+    <svg class="logo" viewBox="0 0 332 79" fill="none" aria-label="hooray!HR" xmlns="http://www.w3.org/2000/svg">
+      <text x="0" y="64" font-family="Avenir, 'Avenir Next', system-ui, sans-serif" font-weight="900" font-size="72" fill="#142340" letter-spacing="-0.5">hooray!</text>
+      <g transform="translate(240 18)">
+        <path d="M0 8 Q0 0 8 0 L70 0 Q78 0 78 8 L78 40 Q78 48 70 48 L20 48 L8 60 L12 48 L8 48 Q0 48 0 40 Z" fill="#142340"/>
+        <text x="12" y="36" font-family="Avenir, system-ui, sans-serif" font-weight="900" font-size="26" fill="#ffffff">HR</text>
+      </g>
+    </svg>
+
+    <!-- Language switcher -->
+    <div class="lang-switcher" role="group" aria-label="Language / Taal / Sprache">
+      <button class="lang-btn active" data-lang="nl" onclick="setLang('nl')">NL</button>
+      <button class="lang-btn"        data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn"        data-lang="de" onclick="setLang('de')">DE</button>
+    </div>
+
+    <!-- ── Step 1: Input form ────────────────────────────────── -->
+    <div class="step active" id="step-form">
+      <h1 class="step-title" data-t="formTitle"></h1>
+      <p  class="step-sub"   data-t="formSub"></p>
+
+      <div class="error-banner" id="form-error"></div>
+
+      <div class="field">
+        <label for="input-name" data-t="labelName"></label>
+        <input type="text"  id="input-name"  autocomplete="name"  data-t-ph="placeholderName">
+        <div class="field-error" id="err-name"></div>
+      </div>
+
+      <div class="field">
+        <label for="input-email" data-t="labelEmail"></label>
+        <input type="email" id="input-email" autocomplete="email" data-t-ph="placeholderEmail">
+        <div class="field-error" id="err-email"></div>
+      </div>
+
+      <div class="field">
+        <label for="input-message" data-t="labelMessage"></label>
+        <textarea id="input-message" rows="5" data-t-ph="placeholderMessage"></textarea>
+        <div class="field-error" id="err-message"></div>
+      </div>
+
+      <button class="btn btn--primary" onclick="submitInitial()" data-t="btnSubmit"></button>
+    </div>
+
+    <!-- ── Step 2: Loading ───────────────────────────────────── -->
+    <div class="step" id="step-loading">
+      <div class="loading-wrap">
+        <div class="dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <p class="loading-text" data-t="loadingText"></p>
+      </div>
+    </div>
+
+    <!-- ── Step 3: Review structured fields ─────────────────── -->
+    <div class="step" id="step-review">
+      <h1 class="step-title" data-t="reviewTitle"></h1>
+      <p  class="step-sub"   data-t="reviewSub"></p>
+
+      <div class="error-banner" id="review-error"></div>
+
+      <div class="field">
+        <label for="review-current" data-t="labelCurrentBehavior"></label>
+        <textarea id="review-current"  rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="review-goal" data-t="labelGoal"></label>
+        <textarea id="review-goal"     rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="review-solution" data-t="labelSolution"></label>
+        <textarea id="review-solution" rows="3"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn--ghost"    onclick="goBack()"      data-t="btnBack"></button>
+        <button class="btn btn--primary"  onclick="submitFinal()" data-t="btnFinalSubmit"></button>
+      </div>
+    </div>
+
+    <!-- ── Step 4: Success ───────────────────────────────────── -->
+    <div class="step" id="step-success">
+      <div class="success-wrap">
+        <div class="success-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="#15803D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h1 class="success-title" id="success-title"></h1>
+        <p  class="success-text"  id="success-text"></p>
+      </div>
+    </div>
+
+  </div><!-- /.card -->
+</div><!-- /.page -->
+
+<!-- ── Debug panel (test mode only) ─────────────────────────── -->
+<div id="debug-panel" class="debug-panel" aria-label="Webhook debug log">
+  <div class="debug-hd">
+    <span class="debug-title">Webhook Log</span>
+    <span class="debug-count" id="debug-count">0</span>
+    <button class="debug-icon-btn" onclick="clearDebug()" title="Clear log">✕ clear</button>
+    <button class="debug-icon-btn debug-chevron" onclick="toggleDebugPanel()" title="Collapse / expand">▲</button>
+  </div>
+  <div class="debug-entries" id="debug-entries">
+    <div class="debug-empty">Nog geen webhook-verkeer in deze sessie…</div>
+  </div>
+</div>
+
+<!-- ── Footer: environment switcher ──────────────────────────── -->
+<footer class="footer" aria-label="Developer options">
+  <span class="footer-label" data-t="footerLabel"></span>
+  <div class="env-toggle" role="group">
+    <button class="env-btn active" id="env-btn-test" onclick="setEnv('test')" data-t="footerTest"></button>
+    <button class="env-btn"        id="env-btn-prod" onclick="setEnv('prod')" data-t="footerProd"></button>
+  </div>
+  <span class="env-url" id="env-url-display" aria-live="polite"></span>
+</footer>
+
+<script>
+  // =============================================================
+  // HoorayHR Feedback Widget
+  //
+  // How this widget works (two-step flow):
+  //
+  //   1. The user fills in name, email and free-text feedback.
+  //   2. submitInitial() POSTs to the n8n webhook (WEBHOOK_TEST or
+  //      WEBHOOK_PROD). The n8n workflow analyses the message with
+  //      an LLM and returns three structured fields plus a unique
+  //      resume_url that belongs to the waiting workflow execution.
+  //   3. The user reviews and edits those three fields.
+  //   4. submitFinal() POSTs the edited fields to the resume_url.
+  //      This resumes the paused n8n workflow.
+  //
+  // To integrate this widget in another project, you only need to:
+  //   - Update WEBHOOK_TEST / WEBHOOK_PROD below.
+  //   - Make sure your n8n workflow returns { resume_url, current_behavior, goal, proposed_solution }.
+  // =============================================================
+
+
+  // -------------------------------------------------------------
+  // Config — replace these with your actual n8n webhook URLs.
+  // Only WEBHOOK_TEST / WEBHOOK_PROD are fixed endpoints.
+  // The final-submit URL (resume_url) comes from the first response
+  // and is different for every workflow execution.
+  // -------------------------------------------------------------
+  const WEBHOOK_TEST = "https://n8n.dev.hoorayhr.io/webhook-test/feature-request";
+  const WEBHOOK_PROD = "https://n8n.dev.hoorayhr.io/webhook/feature-request";
+
+
+  // -------------------------------------------------------------
+  // App state
+  // -------------------------------------------------------------
+  let currentLang = 'nl';   // active UI language (nl | en | de)
+  let currentEnv  = 'test'; // which webhook URL to use (test | prod)
+  let resumeUrl   = null;   // set from the first webhook response; used for the final submit
+
+
+  // -------------------------------------------------------------
+  // Translations
+  //
+  // Every visible string lives here so the entire UI can switch
+  // language without a page reload. Elements with a data-t attribute
+  // are updated automatically by applyTranslations(). The success
+  // screen is rendered dynamically (see renderSuccess) so it is
+  // not part of this object.
+  // -------------------------------------------------------------
+  const STRINGS = {
+    nl: {
+      formTitle:            'Feedback geven',
+      formSub:              'Deel je idee of verbeterpunt. We lezen alles.',
+      labelName:            'Naam',
+      labelEmail:           'E-mailadres',
+      labelMessage:         'Feedback of functiewens',
+      placeholderName:      'Je naam',
+      placeholderEmail:     'naam@bedrijf.nl',
+      placeholderMessage:   'Vertel wat je mist of wat beter kan...',
+      btnSubmit:            'Feedback versturen',
+      loadingText:          'Even geduld. We controleren of we je feedback goed begrepen hebben.',
+      reviewTitle:          'Controleer je feedback',
+      reviewSub:            'We hebben je feedback alvast gestructureerd. Controleer de velden en pas ze aan waar nodig.',
+      labelCurrentBehavior: 'Hoe is het nu in HoorayHR?',
+      labelGoal:            'Wat wil je bereiken?',
+      labelSolution:        'Wat is je voorgestelde oplossing?',
+      btnBack:              'Terug',
+      btnFinalSubmit:       'Definitief versturen',
+      errRequired:          'Dit veld is verplicht.',
+      errEmail:             'Voer een geldig e-mailadres in.',
+      errWebhook:           'Er ging iets mis bij het versturen. Probeer het opnieuw.',
+      errNoResumeUrl:       'Er is geen doorstuur-URL ontvangen. Neem contact op met de beheerder.',
+      errFinalSubmit:       'Definitief versturen mislukt. Probeer het opnieuw.',
+      footerLabel:          'Omgeving:',
+      footerTest:           'Test',
+      footerProd:           'Productie',
+    },
+    en: {
+      formTitle:            'Share feedback',
+      formSub:              'Tell us what you think or what you are missing. We read everything.',
+      labelName:            'Name',
+      labelEmail:           'Email address',
+      labelMessage:         'Feedback or feature request',
+      placeholderName:      'Your name',
+      placeholderEmail:     'name@company.com',
+      placeholderMessage:   'Tell us what is missing or what could be better...',
+      btnSubmit:            'Submit feedback',
+      loadingText:          'Please wait a moment. We are checking whether we understood your feedback correctly.',
+      reviewTitle:          'Review your feedback',
+      reviewSub:            'We have structured your feedback. Please review the fields and adjust them where needed.',
+      labelCurrentBehavior: 'How is it currently in HoorayHR?',
+      labelGoal:            'What are you trying to achieve?',
+      labelSolution:        'What is your proposed solution?',
+      btnBack:              'Back',
+      btnFinalSubmit:       'Submit final feedback',
+      errRequired:          'This field is required.',
+      errEmail:             'Please enter a valid email address.',
+      errWebhook:           'Something went wrong. Please try again.',
+      errNoResumeUrl:       'No resume URL was returned. Please contact the administrator.',
+      errFinalSubmit:       'Final submission failed. Please try again.',
+      footerLabel:          'Environment:',
+      footerTest:           'Test',
+      footerProd:           'Production',
+    },
+    de: {
+      formTitle:            'Feedback geben',
+      formSub:              'Teile deine Idee oder deinen Verbesserungsvorschlag. Wir lesen alles.',
+      labelName:            'Name',
+      labelEmail:           'E-Mail-Adresse',
+      labelMessage:         'Feedback oder Funktionswunsch',
+      placeholderName:      'Dein Name',
+      placeholderEmail:     'name@unternehmen.de',
+      placeholderMessage:   'Erzähl uns, was fehlt oder was besser sein könnte...',
+      btnSubmit:            'Feedback senden',
+      loadingText:          'Bitte warte kurz. Wir prüfen, ob wir dein Feedback richtig verstanden haben.',
+      reviewTitle:          'Feedback prüfen',
+      reviewSub:            'Wir haben dein Feedback vorstrukturiert. Bitte prüfe die Felder und passe sie bei Bedarf an.',
+      labelCurrentBehavior: 'Wie ist es aktuell in HoorayHR?',
+      labelGoal:            'Was möchtest du erreichen?',
+      labelSolution:        'Was ist dein Lösungsvorschlag?',
+      btnBack:              'Zurück',
+      btnFinalSubmit:       'Final absenden',
+      errRequired:          'Dieses Feld ist erforderlich.',
+      errEmail:             'Bitte gib eine gültige E-Mail-Adresse ein.',
+      errWebhook:           'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
+      errNoResumeUrl:       'Keine Weiterleitungs-URL empfangen. Bitte wende dich an den Administrator.',
+      errFinalSubmit:       'Abschließendes Senden fehlgeschlagen. Bitte versuche es erneut.',
+      footerLabel:          'Umgebung:',
+      footerTest:           'Test',
+      footerProd:           'Produktion',
+    },
+  };
+
+  // Look up a translation key for the current language.
+  // Falls back to English if the key is missing in the active language.
+  function tr(key) {
+    return (STRINGS[currentLang] || STRINGS.en)[key] || (STRINGS.en[key] || key);
+  }
+
+  // Switch the active language and refresh all translated elements.
+  function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    applyTranslations();
+  }
+
+  // Walk the DOM and fill every data-t / data-t-ph element with the
+  // correct string for the current language. Also re-renders the
+  // success screen if it is currently visible.
+  function applyTranslations() {
+    document.querySelectorAll('[data-t]').forEach(el => {
+      el.textContent = tr(el.dataset.t);
+    });
+    document.querySelectorAll('[data-t-ph]').forEach(el => {
+      el.placeholder = tr(el.getAttribute('data-t-ph'));
+    });
+    if (document.getElementById('step-success').classList.contains('active')) {
+      renderSuccess(); // success text includes the user's name — re-render on language switch
+    }
+    updateEnvDisplay();
+  }
+
+
+  // -------------------------------------------------------------
+  // Environment toggle (footer)
+  //
+  // Switches between the test and production webhook URL.
+  // In test mode the debug panel is also shown.
+  // -------------------------------------------------------------
+  function setEnv(env) {
+    currentEnv = env;
+    document.getElementById('env-btn-test').classList.toggle('active', env === 'test');
+    document.getElementById('env-btn-prod').classList.toggle('active', env === 'prod');
+    document.getElementById('debug-panel').classList.toggle('visible', env === 'test');
+    // Extra bottom padding so the card is not hidden behind the debug panel
+    document.querySelector('.page').style.paddingBottom = env === 'test' ? '360px' : '72px';
+    updateEnvDisplay();
+  }
+
+  function getWebhookUrl() {
+    return currentEnv === 'prod' ? WEBHOOK_PROD : WEBHOOK_TEST;
+  }
+
+  function updateEnvDisplay() {
+    document.getElementById('env-url-display').textContent = getWebhookUrl();
+  }
+
+
+  // -------------------------------------------------------------
+  // Debug panel (test mode only)
+  //
+  // Logs every outgoing request and incoming response so you can
+  // verify the webhook payloads without opening DevTools.
+  // The panel is hidden automatically when switching to production.
+  // -------------------------------------------------------------
+  let debugEntries   = []; // list of logged events, newest first
+  let debugCollapsed = false;
+
+  // Add one entry to the log. direction is 'out' | 'in' | 'err'.
+  function debugLog(direction, url, status, body) {
+    if (currentEnv !== 'test') return;
+    const now  = new Date();
+    const time = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    debugEntries.unshift({ direction, url, status, body, time, id: now.getTime() + Math.random() });
+    if (debugEntries.length > 30) debugEntries.pop(); // keep the log from growing unbounded
+    renderDebug();
+  }
+
+  // Re-render the full list of log entries as HTML.
+  function renderDebug() {
+    document.getElementById('debug-count').textContent = debugEntries.length;
+    const list = document.getElementById('debug-entries');
+
+    if (debugEntries.length === 0) {
+      list.innerHTML = '<div class="debug-empty">Nog geen webhook-verkeer in deze sessie…</div>';
+      return;
+    }
+
+    list.innerHTML = debugEntries.map(e => {
+      const dirClass = e.direction === 'out' ? 'debug-dir--out'
+                     : e.direction === 'in'  ? 'debug-dir--in'
+                     :                         'debug-dir--err';
+      const dirLabel = e.direction === 'out' ? '↑ OUT'
+                     : e.direction === 'in'  ? '↓ IN'
+                     :                         'ERR';
+      const statusClass = e.status == null               ? 'debug-status--pending'
+                        : e.status >= 200 && e.status < 300 ? 'debug-status--ok'
+                        :                                      'debug-status--err';
+      const statusText = e.status != null ? e.status : '…';
+      const shortUrl   = e.url.replace(/^https?:\/\//, ''); // strip protocol for compact display
+      const bodyStr    = JSON.stringify(e.body, null, 2);
+      const uid        = 'de-' + e.id;
+
+      return `<div class="debug-entry" id="${uid}">
+        <div class="debug-row" onclick="toggleDebugEntry('${uid}')">
+          <span class="debug-dir ${dirClass}">${dirLabel}</span>
+          <span class="debug-status ${statusClass}">${statusText}</span>
+          <span class="debug-url" title="${e.url}">${shortUrl}</span>
+          <span class="debug-time">${e.time}</span>
+          <span class="debug-arrow">▶</span>
+        </div>
+        <div class="debug-body">
+          <pre class="debug-pre">${escHtml(bodyStr)}</pre>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Expand or collapse a single log entry to show its JSON body.
+  function toggleDebugEntry(uid) {
+    document.getElementById(uid).classList.toggle('open');
+  }
+
+  // Collapse / expand the whole debug panel.
+  function toggleDebugPanel() {
+    debugCollapsed = !debugCollapsed;
+    document.getElementById('debug-panel').classList.toggle('collapsed', debugCollapsed);
+    document.querySelector('.page').style.paddingBottom = debugCollapsed ? '90px' : '360px';
+  }
+
+  function clearDebug() {
+    debugEntries = [];
+    renderDebug();
+  }
+
+  // Escape HTML special characters before injecting a string into innerHTML.
+  function escHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+
+  // -------------------------------------------------------------
+  // Step navigation
+  //
+  // The widget has four steps rendered in the same card:
+  //   step-form     → user fills in name, email, free-text
+  //   step-loading  → waiting for the first webhook response
+  //   step-review   → user edits the three structured fields
+  //   step-success  → confirmation screen
+  // Only one step is visible at a time (.active class).
+  // -------------------------------------------------------------
+  function showStep(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function goBack() {
+    clearBanner('review-error');
+    showStep('step-form');
+  }
+
+  function showSuccess() {
+    showStep('step-success');
+    renderSuccess();
+  }
+
+  // Render the personalised success message using the name and email
+  // the user entered in step 1. Called again on language switch.
+  function renderSuccess() {
+    const name  = document.getElementById('input-name').value.trim();
+    const email = document.getElementById('input-email').value.trim();
+
+    const titles = {
+      nl: `Bedankt, ${name}!`,
+      en: `Thank you, ${name}!`,
+      de: `Danke, ${name}!`,
+    };
+    const texts = {
+      nl: `We sturen je een e-mail naar <strong>${escHtml(email)}</strong> zodra er een update is.`,
+      en: `We will send you an update by email to <strong>${escHtml(email)}</strong>.`,
+      de: `Wir schicken dir eine E-Mail an <strong>${escHtml(email)}</strong>, sobald es ein Update dazu gibt.`,
+    };
+
+    document.getElementById('success-title').textContent = titles[currentLang] || titles.en;
+    document.getElementById('success-text').innerHTML    = texts[currentLang]  || texts.en;
+  }
+
+
+  // -------------------------------------------------------------
+  // Form validation helpers
+  // -------------------------------------------------------------
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // Show or clear an inline error below a form field.
+  function setFieldError(inputId, errId, msg) {
+    const input = document.getElementById(inputId);
+    const err   = document.getElementById(errId);
+    if (msg) {
+      input.classList.add('has-error');
+      err.textContent = msg;
+    } else {
+      input.classList.remove('has-error');
+      err.textContent = '';
+    }
+  }
+
+  // Show or clear the full-width error banner above the form.
+  function showBanner(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function clearBanner(id) {
+    const el = document.getElementById(id);
+    el.textContent = '';
+    el.classList.remove('visible');
+  }
+
+
+  // -------------------------------------------------------------
+  // Step 1 — initial submit
+  //
+  // Validates the form, POSTs to the n8n webhook, and waits for
+  // the response. The response must include:
+  //   - resume_url          (string) — unique URL to resume the paused workflow
+  //   - current_behavior    (string) — LLM-structured field
+  //   - goal                (string) — LLM-structured field
+  //   - proposed_solution   (string) — LLM-structured field
+  // -------------------------------------------------------------
+  async function submitInitial() {
+    const name    = document.getElementById('input-name').value.trim();
+    const email   = document.getElementById('input-email').value.trim();
+    const message = document.getElementById('input-message').value.trim();
+
+    // Clear any previous validation state
+    setFieldError('input-name',    'err-name',    null);
+    setFieldError('input-email',   'err-email',   null);
+    setFieldError('input-message', 'err-message', null);
+    clearBanner('form-error');
+
+    let valid = true;
+    if (!name)               { setFieldError('input-name',    'err-name',    tr('errRequired')); valid = false; }
+    if (!email)              { setFieldError('input-email',   'err-email',   tr('errRequired')); valid = false; }
+    else if (!isValidEmail(email)) { setFieldError('input-email', 'err-email', tr('errEmail')); valid = false; }
+    if (!message)            { setFieldError('input-message', 'err-message', tr('errRequired')); valid = false; }
+    if (!valid) return;
+
+    showStep('step-loading');
+
+    const webhookUrl = getWebhookUrl();
+    const outPayload = { name, email, language: currentLang, message };
+    debugLog('out', webhookUrl, null, outPayload);
+
+    try {
+      const res = await fetch(webhookUrl, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(outPayload),
+      });
+
+      if (!res.ok) {
+        debugLog('err', webhookUrl, res.status, { error: 'HTTP ' + res.status });
+        throw new Error('HTTP ' + res.status);
+      }
+
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error('invalid_json'); }
+
+      debugLog('in', webhookUrl, res.status, data);
+
+      // The n8n workflow returns a unique resume_url for this execution.
+      // Store it — submitFinal() will POST to this URL to resume the workflow.
+      resumeUrl = data.resume_url || null;
+
+      if (!resumeUrl) {
+        showStep('step-form');
+        showBanner('form-error', tr('errNoResumeUrl'));
+        return;
+      }
+
+      // Pre-fill the review fields with the LLM-structured response.
+      // The user can edit these before the final submit.
+      document.getElementById('review-current').value  = data.current_behavior  || '';
+      document.getElementById('review-goal').value     = data.goal              || '';
+      document.getElementById('review-solution').value = data.proposed_solution || '';
+
+      clearBanner('review-error');
+      showStep('step-review');
+
+    } catch (e) {
+      debugLog('err', webhookUrl, 0, { error: e.message });
+      showStep('step-form');
+      showBanner('form-error', tr('errWebhook'));
+      console.error('[hoorayhr-feedback] Initial webhook error:', e);
+    }
+  }
+
+
+  // -------------------------------------------------------------
+  // Step 3 — final submit
+  //
+  // POSTs the user-edited structured fields to the resume_url that
+  // was returned by the first webhook. This resumes the paused
+  // n8n workflow with the final, reviewed data.
+  //
+  // Important: resume_url is unique per workflow execution.
+  //            Never hardcode it — always use the value stored in
+  //            the resumeUrl variable above.
+  // -------------------------------------------------------------
+  async function submitFinal() {
+    clearBanner('review-error');
+
+    if (!resumeUrl) {
+      showBanner('review-error', tr('errNoResumeUrl'));
+      return;
+    }
+
+    const payload = {
+      name:              document.getElementById('input-name').value.trim(),
+      email:             document.getElementById('input-email').value.trim(),
+      language:          currentLang,
+      original_message:  document.getElementById('input-message').value.trim(),
+      current_behavior:  document.getElementById('review-current').value.trim(),
+      goal:              document.getElementById('review-goal').value.trim(),
+      proposed_solution: document.getElementById('review-solution').value.trim(),
+    };
+
+    debugLog('out', resumeUrl, null, payload);
+
+    try {
+      const res = await fetch(resumeUrl, {
+        method:  'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body:    JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        debugLog('err', resumeUrl, res.status, { error: 'HTTP ' + res.status });
+        throw new Error('HTTP ' + res.status);
+      }
+
+      debugLog('in', resumeUrl, res.status, { ok: true });
+      showSuccess();
+
+    } catch (e) {
+      debugLog('err', resumeUrl, 0, { error: e.message });
+      showBanner('review-error', tr('errFinalSubmit'));
+      console.error('[hoorayhr-feedback] Final submit error:', e);
+    }
+  }
+
+
+  // -------------------------------------------------------------
+  // Initialise
+  // -------------------------------------------------------------
+  setLang('nl');  // default language: Dutch
+  setEnv('test'); // default environment: test webhook
+</script>
+
+</body>
+</html>
