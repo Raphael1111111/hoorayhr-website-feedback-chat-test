@@ -278,6 +278,48 @@
       line-height: 1.6;
     }
 
+    /* ── Saved-fields recap (shown after final submit) ──────── */
+    .saved-info {
+      margin-top: 24px;
+      background: var(--mint-soft);
+      border: 1px solid #B8F0D6;
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      text-align: left;
+    }
+    .saved-info-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--green-600);
+      margin-bottom: 12px;
+      letter-spacing: 0.01em;
+    }
+    .saved-info-title svg { flex-shrink: 0; }
+    .saved-field { margin-bottom: 10px; }
+    .saved-field:last-child { margin-bottom: 0; }
+    .saved-field-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 3px;
+    }
+    .saved-field-value {
+      font-size: 13px;
+      color: var(--gray-900);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .saved-field-value--empty {
+      color: var(--gray-400);
+      font-style: italic;
+    }
+
     /* ── Step transitions ────────────────────────────────────── */
     .step { display: none; }
     .step.active {
@@ -363,6 +405,14 @@
     }
     .debug-panel.visible   { display: flex; }
     .debug-panel.collapsed { max-height: 34px; }
+    /* In production the stripe turns blue — log stays available but the
+       colour change makes the active environment obvious at a glance. */
+    .debug-panel--prod         { border-top-color: var(--blue-600); }
+    .debug-panel--prod .debug-title { color: #5FE7FF; }
+    .debug-panel--prod .debug-count {
+      background: rgba(0,108,201,0.25);
+      color: #5FE7FF;
+    }
 
     .debug-hd {
       display: flex;
@@ -601,6 +651,29 @@
         </div>
         <h1 class="success-title" id="success-title"></h1>
         <p  class="success-text"  id="success-text"></p>
+
+        <!-- Recap of the three structured fields that were stored. -->
+        <div class="saved-info" id="saved-info">
+          <div class="saved-info-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span id="saved-info-title-text"></span>
+          </div>
+          <div class="saved-field">
+            <div class="saved-field-label" id="saved-label-current"></div>
+            <div class="saved-field-value" id="saved-value-current"></div>
+          </div>
+          <div class="saved-field">
+            <div class="saved-field-label" id="saved-label-goal"></div>
+            <div class="saved-field-value" id="saved-value-goal"></div>
+          </div>
+          <div class="saved-field">
+            <div class="saved-field-label" id="saved-label-solution"></div>
+            <div class="saved-field-value" id="saved-value-solution"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -624,8 +697,8 @@
 <footer class="footer" aria-label="Developer options">
   <span class="footer-label" data-t="footerLabel"></span>
   <div class="env-toggle" role="group">
-    <button class="env-btn active" id="env-btn-test" onclick="setEnv('test')" data-t="footerTest"></button>
-    <button class="env-btn"        id="env-btn-prod" onclick="setEnv('prod')" data-t="footerProd"></button>
+    <button class="env-btn"        id="env-btn-test" onclick="setEnv('test')" data-t="footerTest"></button>
+    <button class="env-btn active" id="env-btn-prod" onclick="setEnv('prod')" data-t="footerProd"></button>
   </div>
   <span class="env-url" id="env-url-display" aria-live="polite"></span>
 </footer>
@@ -665,7 +738,7 @@
   // App state
   // -------------------------------------------------------------
   let currentLang = 'nl';   // active UI language (nl | en | de)
-  let currentEnv  = 'test'; // which webhook URL to use (test | prod)
+  let currentEnv  = 'prod'; // which webhook URL to use (test | prod)
   let resumeUrl   = null;   // set from the first webhook response; used for the final submit
 
 
@@ -702,6 +775,8 @@
       errWebhook:           'Er ging iets mis bij het versturen. Probeer het opnieuw.',
       errNoResumeUrl:       'Er is geen doorstuur-URL ontvangen. Neem contact op met de beheerder.',
       errFinalSubmit:       'Definitief versturen mislukt. Probeer het opnieuw.',
+      savedTitle:           'Deze drie velden zijn opgeslagen',
+      savedEmpty:           '(leeg gelaten)',
       footerLabel:          'Omgeving:',
       footerTest:           'Test',
       footerProd:           'Productie',
@@ -729,6 +804,8 @@
       errWebhook:           'Something went wrong. Please try again.',
       errNoResumeUrl:       'No resume URL was returned. Please contact the administrator.',
       errFinalSubmit:       'Final submission failed. Please try again.',
+      savedTitle:           'These three fields have been saved',
+      savedEmpty:           '(left empty)',
       footerLabel:          'Environment:',
       footerTest:           'Test',
       footerProd:           'Production',
@@ -756,6 +833,8 @@
       errWebhook:           'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
       errNoResumeUrl:       'Keine Weiterleitungs-URL empfangen. Bitte wende dich an den Administrator.',
       errFinalSubmit:       'Abschließendes Senden fehlgeschlagen. Bitte versuche es erneut.',
+      savedTitle:           'Diese drei Felder wurden gespeichert',
+      savedEmpty:           '(leer gelassen)',
       footerLabel:          'Umgebung:',
       footerTest:           'Test',
       footerProd:           'Produktion',
@@ -804,9 +883,14 @@
     currentEnv = env;
     document.getElementById('env-btn-test').classList.toggle('active', env === 'test');
     document.getElementById('env-btn-prod').classList.toggle('active', env === 'prod');
-    document.getElementById('debug-panel').classList.toggle('visible', env === 'test');
+    // The debug panel is shown in both environments, but the colored
+    // top stripe differs so the active environment is visible at a glance:
+    //   yellow → test, blue → production.
+    const panel = document.getElementById('debug-panel');
+    panel.classList.add('visible');
+    panel.classList.toggle('debug-panel--prod', env === 'prod');
     // Extra bottom padding so the card is not hidden behind the debug panel
-    document.querySelector('.page').style.paddingBottom = env === 'test' ? '360px' : '72px';
+    document.querySelector('.page').style.paddingBottom = debugCollapsed ? '90px' : '360px';
     updateEnvDisplay();
   }
 
@@ -830,8 +914,8 @@
   let debugCollapsed = false;
 
   // Add one entry to the log. direction is 'out' | 'in' | 'err'.
+  // Logs in both test and production so devs can verify webhook traffic.
   function debugLog(direction, url, status, body) {
-    if (currentEnv !== 'test') return;
     const now  = new Date();
     const time = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     debugEntries.unshift({ direction, url, status, body, time, id: now.getTime() + Math.random() });
@@ -928,7 +1012,8 @@
   }
 
   // Render the personalised success message using the name and email
-  // the user entered in step 1. Called again on language switch.
+  // the user entered in step 1. Also fills the saved-fields recap with
+  // the final values the user submitted. Called again on language switch.
   function renderSuccess() {
     const name  = document.getElementById('input-name').value.trim();
     const email = document.getElementById('input-email').value.trim();
@@ -946,6 +1031,29 @@
 
     document.getElementById('success-title').textContent = titles[currentLang] || titles.en;
     document.getElementById('success-text').innerHTML    = texts[currentLang]  || texts.en;
+
+    // Recap: show the three structured fields the user just submitted.
+    document.getElementById('saved-info-title-text').textContent = tr('savedTitle');
+    document.getElementById('saved-label-current').textContent   = tr('labelCurrentBehavior');
+    document.getElementById('saved-label-goal').textContent      = tr('labelGoal');
+    document.getElementById('saved-label-solution').textContent  = tr('labelSolution');
+
+    setSavedValue('saved-value-current',  document.getElementById('review-current').value.trim());
+    setSavedValue('saved-value-goal',     document.getElementById('review-goal').value.trim());
+    setSavedValue('saved-value-solution', document.getElementById('review-solution').value.trim());
+  }
+
+  // Fill one recap field. Empty values get a muted placeholder so the
+  // structure of the recap stays consistent.
+  function setSavedValue(id, value) {
+    const el = document.getElementById(id);
+    if (value) {
+      el.textContent = value;
+      el.classList.remove('saved-field-value--empty');
+    } else {
+      el.textContent = tr('savedEmpty');
+      el.classList.add('saved-field-value--empty');
+    }
   }
 
 
@@ -1035,9 +1143,12 @@
 
       debugLog('in', webhookUrl, res.status, data);
 
-      // The n8n workflow returns a unique resume_url for this execution.
+      // The n8n workflow returns a unique resume URL for this execution.
+      // Accept both `resumeUrl` (camelCase, what n8n actually sends) and
+      // `resume_url` (snake_case) so the widget keeps working if the
+      // workflow is changed later.
       // Store it — submitFinal() will POST to this URL to resume the workflow.
-      resumeUrl = data.resume_url || null;
+      resumeUrl = data.resumeUrl || data.resume_url || null;
 
       if (!resumeUrl) {
         showStep('step-form');
@@ -1121,7 +1232,7 @@
   // Initialise
   // -------------------------------------------------------------
   setLang('nl');  // default language: Dutch
-  setEnv('test'); // default environment: test webhook
+  setEnv('prod'); // default environment: production webhook
 </script>
 
 </body>
