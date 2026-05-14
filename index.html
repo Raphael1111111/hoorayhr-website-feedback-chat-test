@@ -320,6 +320,69 @@
       font-style: italic;
     }
 
+    /* ── Importance picker (step-review) ─────────────────────── */
+    .importance-block { margin-top: 4px; margin-bottom: 4px; }
+    .importance-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin-bottom: 8px;
+    }
+    .importance-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .importance-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 6px 10px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: border-color .12s, background .12s, transform .08s, box-shadow .12s;
+      text-align: center;
+    }
+    .importance-option:hover {
+      border-color: var(--gray-300);
+      background: var(--gray-100);
+    }
+    .importance-option:active { transform: translateY(1px); }
+    .importance-option.selected {
+      border-color: var(--blue-600);
+      background: #EAF4FD;
+      box-shadow: 0 0 0 3px rgba(0,108,201,0.10);
+    }
+    .importance-emoji {
+      font-size: 28px;
+      line-height: 1;
+      filter: grayscale(0.55) opacity(0.7);
+      transition: filter .15s, transform .15s;
+    }
+    .importance-option:hover .importance-emoji { filter: grayscale(0.2) opacity(0.95); }
+    .importance-option.selected .importance-emoji {
+      filter: none;
+      transform: scale(1.08);
+    }
+    .importance-option-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-600);
+      letter-spacing: 0.01em;
+      line-height: 1.25;
+    }
+    .importance-option.selected .importance-option-label { color: var(--navy); }
+
+    @media (max-width: 420px) {
+      .importance-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
     /* ── Step transitions ────────────────────────────────────── */
     .step { display: none; }
     .step.active {
@@ -634,6 +697,13 @@
         <textarea id="review-solution" rows="3"></textarea>
       </div>
 
+      <!-- Importance picker — maps to a Plutio custom-field select.
+           Field id and option ids are defined in IMPORTANCE_FIELD below. -->
+      <div class="importance-block">
+        <span class="importance-label" data-t="labelImportance"></span>
+        <div class="importance-grid" id="importance-grid" role="radiogroup" aria-label="Importance"></div>
+      </div>
+
       <div class="btn-row">
         <button class="btn btn--ghost"    onclick="goBack()"      data-t="btnBack"></button>
         <button class="btn btn--primary"  onclick="submitFinal()" data-t="btnFinalSubmit"></button>
@@ -672,6 +742,10 @@
           <div class="saved-field">
             <div class="saved-field-label" id="saved-label-solution"></div>
             <div class="saved-field-value" id="saved-value-solution"></div>
+          </div>
+          <div class="saved-field">
+            <div class="saved-field-label" id="saved-label-importance"></div>
+            <div class="saved-field-value" id="saved-value-importance"></div>
           </div>
         </div>
       </div>
@@ -740,6 +814,29 @@
   let currentLang = 'nl';   // active UI language (nl | en | de)
   let currentEnv  = 'prod'; // which webhook URL to use (test | prod)
   let resumeUrl   = null;   // set from the first webhook response; used for the final submit
+  let selectedImportanceId = null; // option id from IMPORTANCE_FIELD, or null if user has not picked
+
+
+  // -------------------------------------------------------------
+  // Importance custom-field
+  //
+  // Mirrors the Plutio custom field "Importance" (type: select).
+  // The field id and option ids are the real ids from the upstream
+  // system — they are sent back with the final submit so the n8n
+  // workflow can write straight into Plutio.
+  // The emoji column is purely visual; the ranking goes from
+  // "not important" (neutral face) → "essential" (star-struck face).
+  // -------------------------------------------------------------
+  const IMPORTANCE_FIELD = {
+    id: '69fb474566159d2bf3fa7ad8',
+    label: 'Importance',
+    options: [
+      { id: '69fb473830d83b0df18fb613', emoji: '😐', labelKey: 'importanceNotImportant', rawLabel: 'Not important' },
+      { id: '69fb473a30d83b0df18fb614', emoji: '🙂', labelKey: 'importanceNiceToHave',   rawLabel: 'Nice to have'  },
+      { id: '69fb474230d83b0df18fb615', emoji: '😀', labelKey: 'importanceImportant',    rawLabel: 'Important'     },
+      { id: '69fb474430d83b0df18fb616', emoji: '🤩', labelKey: 'importanceEssential',    rawLabel: 'Essential'     },
+    ],
+  };
 
 
   // -------------------------------------------------------------
@@ -768,6 +865,12 @@
       labelCurrentBehavior: 'Hoe is het nu in HoorayHR?',
       labelGoal:            'Wat wil je bereiken?',
       labelSolution:        'Wat is je voorgestelde oplossing?',
+      labelImportance:      'Hoe belangrijk is dit voor jou?',
+      importanceNotImportant: 'Niet belangrijk',
+      importanceNiceToHave:   'Fijn om te hebben',
+      importanceImportant:    'Belangrijk',
+      importanceEssential:    'Essentieel',
+      importanceNone:         '(niet gekozen)',
       btnBack:              'Terug',
       btnFinalSubmit:       'Definitief versturen',
       errRequired:          'Dit veld is verplicht.',
@@ -797,6 +900,12 @@
       labelCurrentBehavior: 'How is it currently in HoorayHR?',
       labelGoal:            'What are you trying to achieve?',
       labelSolution:        'What is your proposed solution?',
+      labelImportance:      'How important is this to you?',
+      importanceNotImportant: 'Not important',
+      importanceNiceToHave:   'Nice to have',
+      importanceImportant:    'Important',
+      importanceEssential:    'Essential',
+      importanceNone:         '(not selected)',
       btnBack:              'Back',
       btnFinalSubmit:       'Submit final feedback',
       errRequired:          'This field is required.',
@@ -826,6 +935,12 @@
       labelCurrentBehavior: 'Wie ist es aktuell in HoorayHR?',
       labelGoal:            'Was möchtest du erreichen?',
       labelSolution:        'Was ist dein Lösungsvorschlag?',
+      labelImportance:      'Wie wichtig ist dir das?',
+      importanceNotImportant: 'Nicht wichtig',
+      importanceNiceToHave:   'Schön zu haben',
+      importanceImportant:    'Wichtig',
+      importanceEssential:    'Unverzichtbar',
+      importanceNone:         '(nicht gewählt)',
       btnBack:              'Zurück',
       btnFinalSubmit:       'Final absenden',
       errRequired:          'Dieses Feld ist erforderlich.',
@@ -869,7 +984,41 @@
     if (document.getElementById('step-success').classList.contains('active')) {
       renderSuccess(); // success text includes the user's name — re-render on language switch
     }
+    renderImportance(); // labels under each smiley depend on the language
     updateEnvDisplay();
+  }
+
+
+  // -------------------------------------------------------------
+  // Importance picker — render and selection
+  // -------------------------------------------------------------
+  function renderImportance() {
+    const grid = document.getElementById('importance-grid');
+    if (!grid) return;
+    grid.innerHTML = IMPORTANCE_FIELD.options.map(opt => {
+      const isSel = selectedImportanceId === opt.id;
+      return `<button type="button"
+                      class="importance-option${isSel ? ' selected' : ''}"
+                      role="radio"
+                      aria-checked="${isSel ? 'true' : 'false'}"
+                      data-option-id="${opt.id}"
+                      onclick="selectImportance('${opt.id}')">
+        <span class="importance-emoji" aria-hidden="true">${opt.emoji}</span>
+        <span class="importance-option-label">${escHtml(tr(opt.labelKey))}</span>
+      </button>`;
+    }).join('');
+  }
+
+  function selectImportance(optionId) {
+    // Toggle off if the same option is clicked again — keeps the field optional.
+    selectedImportanceId = (selectedImportanceId === optionId) ? null : optionId;
+    renderImportance();
+  }
+
+  // Returns the option object for the currently selected id, or null.
+  function getSelectedImportance() {
+    if (!selectedImportanceId) return null;
+    return IMPORTANCE_FIELD.options.find(o => o.id === selectedImportanceId) || null;
   }
 
 
@@ -1037,10 +1186,21 @@
     document.getElementById('saved-label-current').textContent   = tr('labelCurrentBehavior');
     document.getElementById('saved-label-goal').textContent      = tr('labelGoal');
     document.getElementById('saved-label-solution').textContent  = tr('labelSolution');
+    document.getElementById('saved-label-importance').textContent = tr('labelImportance');
 
     setSavedValue('saved-value-current',  document.getElementById('review-current').value.trim());
     setSavedValue('saved-value-goal',     document.getElementById('review-goal').value.trim());
     setSavedValue('saved-value-solution', document.getElementById('review-solution').value.trim());
+
+    const importance = getSelectedImportance();
+    const importanceEl = document.getElementById('saved-value-importance');
+    if (importance) {
+      importanceEl.textContent = `${importance.emoji}  ${tr(importance.labelKey)}`;
+      importanceEl.classList.remove('saved-field-value--empty');
+    } else {
+      importanceEl.textContent = tr('importanceNone');
+      importanceEl.classList.add('saved-field-value--empty');
+    }
   }
 
   // Fill one recap field. Empty values get a muted placeholder so the
@@ -1162,6 +1322,10 @@
       document.getElementById('review-goal').value     = data.goal              || '';
       document.getElementById('review-solution').value = data.proposed_solution || '';
 
+      // Reset importance for each new submission and render the picker.
+      selectedImportanceId = null;
+      renderImportance();
+
       clearBanner('review-error');
       showStep('step-review');
 
@@ -1193,6 +1357,8 @@
       return;
     }
 
+    const importance = getSelectedImportance();
+
     const payload = {
       name:              document.getElementById('input-name').value.trim(),
       email:             document.getElementById('input-email').value.trim(),
@@ -1201,6 +1367,14 @@
       current_behavior:  document.getElementById('review-current').value.trim(),
       goal:              document.getElementById('review-goal').value.trim(),
       proposed_solution: document.getElementById('review-solution').value.trim(),
+      // Plutio custom-field payload. `importance` is null if the user did not
+      // pick anything; otherwise it carries the field id, the chosen option
+      // id (what Plutio actually stores) and the human-readable label.
+      importance: importance ? {
+        field_id:  IMPORTANCE_FIELD.id,
+        option_id: importance.id,
+        label:     importance.rawLabel,
+      } : null,
     };
 
     debugLog('out', resumeUrl, null, payload);
