@@ -74,11 +74,51 @@
     }
 
     /* ── Logo ────────────────────────────────────────────────── */
+    /* Rendered in HTML (not SVG) so it uses the already-loaded
+       Nunito Sans font and stays crisp at any size. The badge is a
+       rounded square with a small triangular tail → speech bubble. */
     .logo {
-      display: block;
-      height: 26px;
-      width: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       margin-bottom: 28px;
+      line-height: 1;
+      user-select: none;
+    }
+    .logo-word {
+      font-family: var(--font);
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .logo-badge {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--navy);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      padding: 5px 9px 6px;
+      border-radius: 7px;
+      line-height: 1;
+    }
+    /* Speech-bubble tail on the bottom-left of the badge. */
+    .logo-badge::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      bottom: -5px;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 6px 6px 0 0;
+      border-color: var(--navy) transparent transparent transparent;
     }
 
     /* ── Language switcher ───────────────────────────────────── */
@@ -621,14 +661,11 @@
 <div class="page">
   <div class="card">
 
-    <!-- HoorayHR logo (inline SVG from design system) -->
-    <svg class="logo" viewBox="0 0 332 79" fill="none" aria-label="hooray!HR" xmlns="http://www.w3.org/2000/svg">
-      <text x="0" y="64" font-family="Avenir, 'Avenir Next', system-ui, sans-serif" font-weight="900" font-size="72" fill="#142340" letter-spacing="-0.5">hooray!</text>
-      <g transform="translate(240 18)">
-        <path d="M0 8 Q0 0 8 0 L70 0 Q78 0 78 8 L78 40 Q78 48 70 48 L20 48 L8 60 L12 48 L8 48 Q0 48 0 40 Z" fill="#142340"/>
-        <text x="12" y="36" font-family="Avenir, system-ui, sans-serif" font-weight="900" font-size="26" fill="#ffffff">HR</text>
-      </g>
-    </svg>
+    <!-- HoorayHR logo — HTML/CSS so Nunito Sans renders at any size. -->
+    <div class="logo" aria-label="hooray!HR">
+      <span class="logo-word">hooray!</span>
+      <span class="logo-badge">HR</span>
+    </div>
 
     <!-- Language switcher -->
     <div class="lang-switcher" role="group" aria-label="Language / Taal / Sprache">
@@ -878,7 +915,7 @@
       errWebhook:           'Er ging iets mis bij het versturen. Probeer het opnieuw.',
       errNoResumeUrl:       'Er is geen doorstuur-URL ontvangen. Neem contact op met de beheerder.',
       errFinalSubmit:       'Definitief versturen mislukt. Probeer het opnieuw.',
-      savedTitle:           'Deze drie velden zijn opgeslagen',
+      savedTitle:           'Deze velden zijn opgeslagen',
       savedEmpty:           '(leeg gelaten)',
       footerLabel:          'Omgeving:',
       footerTest:           'Test',
@@ -913,7 +950,7 @@
       errWebhook:           'Something went wrong. Please try again.',
       errNoResumeUrl:       'No resume URL was returned. Please contact the administrator.',
       errFinalSubmit:       'Final submission failed. Please try again.',
-      savedTitle:           'These three fields have been saved',
+      savedTitle:           'These fields have been saved',
       savedEmpty:           '(left empty)',
       footerLabel:          'Environment:',
       footerTest:           'Test',
@@ -948,7 +985,7 @@
       errWebhook:           'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
       errNoResumeUrl:       'Keine Weiterleitungs-URL empfangen. Bitte wende dich an den Administrator.',
       errFinalSubmit:       'Abschließendes Senden fehlgeschlagen. Bitte versuche es erneut.',
-      savedTitle:           'Diese drei Felder wurden gespeichert',
+      savedTitle:           'Diese Felder wurden gespeichert',
       savedEmpty:           '(leer gelassen)',
       footerLabel:          'Umgebung:',
       footerTest:           'Test',
@@ -1019,6 +1056,19 @@
   function getSelectedImportance() {
     if (!selectedImportanceId) return null;
     return IMPORTANCE_FIELD.options.find(o => o.id === selectedImportanceId) || null;
+  }
+
+  // Map an LLM-suggested importance value to a known option id.
+  // Accepts the raw option id, or a label like "Important" / "important"
+  // (English labels match the Plutio source field). Returns null if the
+  // value is missing or cannot be matched.
+  function matchImportance(value) {
+    if (!value || typeof value !== 'string') return null;
+    const v = value.trim().toLowerCase();
+    const hit = IMPORTANCE_FIELD.options.find(o =>
+      o.id === value || o.rawLabel.toLowerCase() === v
+    );
+    return hit ? hit.id : null;
   }
 
 
@@ -1322,8 +1372,11 @@
       document.getElementById('review-goal').value     = data.goal              || '';
       document.getElementById('review-solution').value = data.proposed_solution || '';
 
-      // Reset importance for each new submission and render the picker.
-      selectedImportanceId = null;
+      // The LLM may suggest an importance level. Accept either the raw
+      // Plutio option id ("69fb47..."), the English label ("Important"),
+      // or null / missing — match it against IMPORTANCE_FIELD so the
+      // matching smiley is pre-selected. The user can still change it.
+      selectedImportanceId = matchImportance(data.importance);
       renderImportance();
 
       clearBanner('review-error');
